@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Arcade from './pages/Arcade';
 import Map from './pages/Map';
 import Media from './pages/Media';
+import OozeFlowGame from './games/OozeFlow';
 import Tests from './pages/Tests';
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/arcade" element={<Arcade />} />
+            <Route path="/arcade/oozeflow" element={<OozeFlowGame />} />
             <Route path="/map" element={<Map />} />
             <Route path="/media" element={<Media />} />
             <Route path="/tests" element={<Tests />} />
