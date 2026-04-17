@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 
-type Theme = 'default' | 'retro' | 'steampunk';
+type Theme = 'default' | 'neon' | 'vintage';
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('default');
@@ -9,7 +9,7 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('theme-retro', 'theme-steampunk', 'dark');
+    root.classList.remove('theme-neon', 'theme-vintage', 'dark');
     
     if (theme !== 'default') {
       root.classList.add(`theme-${theme}`);
@@ -33,7 +33,7 @@ export default function ThemeToggle() {
       <div className="w-px h-6 bg-border mx-1"></div>
 
       <div className="flex gap-2">
-        {(['default', 'retro', 'steampunk'] as Theme[]).map((t) => (
+        {(['default', 'neon', 'vintage'] as Theme[]).map((t) => (
           <button
             key={t}
             onClick={() => setTheme(t)}

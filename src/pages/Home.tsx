@@ -1,4 +1,4 @@
-import { ArrowRight, Code, Box, Layers } from 'lucide-react';
+import { ArrowRight, Play, Box, Layers, LinkIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Home() {
@@ -26,12 +26,13 @@ export default function Home() {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 pt-8">
           {[
             { tag: 'Arcade', label: 'Play Retro Games', path: '/arcade', icon: Layers, color: 'text-primary' },
             { tag: 'Map', label: 'Explore the Atlas', path: '/map', icon: Box, color: 'text-secondary' },
-            { tag: 'Radio', label: 'Tune the Signal', path: '/media', icon: Code, color: 'text-accent' },
+            { tag: 'Media', label: 'Tune the Signal', path: '/media', icon: Play, color: 'text-accent' },
             { tag: 'Lab', label: 'Experiments & Tests', path: '/tests', icon: Layers, color: 'text-primary' },
+            { tag: 'Links', label: 'Useful Links', path: '/links', icon: LinkIcon, color: 'text-primary' },
           ].map((item, i) => (
             <Link
               to={item.path}

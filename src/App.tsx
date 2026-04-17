@@ -5,6 +5,7 @@ import Arcade from './pages/Arcade';
 import Map from './pages/Map';
 import Media from './pages/Media';
 import Tests from './pages/Tests';
+import Links from './pages/Links';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/map" element={<Map />} />
             <Route path="/media" element={<Media />} />
             <Route path="/tests" element={<Tests />} />
+            <Route path="/links" element={<Links />} />
           </Routes>
         </main>
       </div>

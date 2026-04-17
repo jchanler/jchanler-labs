@@ -47,7 +47,7 @@
     --border-color: #334155;
   }
 
-  .theme-retro {
+  .theme-neon {
     --primary: #ff00ff; /* Neon Magenta */
     --secondary: #00ffff; /* Neon Cyan */
     --accent: #ffff00; /* Neon Yellow */
@@ -59,12 +59,12 @@
     font-family: 'Courier New', Courier, monospace;
   }
 
-  .theme-steampunk {
+  .theme-vintage {
     --primary: #b06500; /* Brass */
     --secondary: #8c7355; /* Wood/Leather */
     --accent: #c43e00; /* Rust/Copper */
-    --bg-base: #2c241b;
-    --bg-surface: #3e3223;
+    --bg-base: #f7f7f4;
+    --bg-surface: #756654;
     --text-main: #e8dcc7;
     --text-muted: #b8a68b;
     --border-color: #5c4b37;
