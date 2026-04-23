@@ -1,11 +1,13 @@
 # jchanler-labs
 A React site with varied interactive explorations, games, maps, test automation reporting, and small projects.
 
+
+
 ---
 
 ## Theming Engine & Architecture
 This project utilizes a pure CSS-based `ThemeToggle` feature leveraging Tailwind CSS v4's native `@theme` support. It transitions between distinct aesthetic modes seamlessly across the platform:
-- **Geometric (Default)**: Modern, clean styling with animated background blobs and a tech-industry feel.
+- **Default**: Modern, clean styling with animated background blobs and a tech-industry feel.
 - **Neon**: Magenta and cyan contrasts with monospace fonts.
 - **Vintage**: Brass, rust, and wood color palettes paired with serif typography.
 - **Dark Mode**: Integrated explicitly into the toggle for all available themes.
@@ -24,7 +26,7 @@ This project utilizes a pure CSS-based `ThemeToggle` feature leveraging Tailwind
 
 ---
 
-## Setup & Executionr
+## Setup & Run Locally
 
 ### 1. Prerequisite: Node.js (via NVM)
 https://github.com/nvm-sh/nvm
@@ -44,4 +46,18 @@ npm install
 # Start the Vite development server
 npm run dev
 ```
-Navigate to your local host (usually `http://localhost:5173/`) to begin browsing!
+Navigate to your local host (usually `http://localhost:5173/`) to begin browsing
+
+---
+
+## References
+
+[Lucide](https://lucide.dev/) - Open Source icon library
+[Coolors](https://coolors.co/) - Color Palette Generator
+[Unplash](https://unsplash.com/) - 
+[Pexels](https://www.pexels.com/) - Free stock photos
+
+## Color Palettes
+[Sunrise For you](https://www.schemecolor.com/sunrise-for-you.php)
+[Fantasy Purple Orange Blue](https://www.schemecolor.com/fantasy-purple-orange-blue.php)
+[Neon Multicolored Heart](https://www.schemecolor.com/neon-multicolored-heart.php)
