@@ -3,7 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import { Map as MapIcon } from 'lucide-react';
 
 export default function Map() {
-  const position: [number, number] = [51.505, -0.09]; // London as default
+  const position: [number, number] = [42.3561, -71.0655]; // Boston as default
 
   return (
     <div className="w-full h-full flex flex-col p-8 bg-bg-base relative text-text-main flex-grow">
@@ -18,7 +18,7 @@ export default function Map() {
           </div>
         </div>
         <div className="flex-grow w-full relative z-0">
-          <MapContainer center={position} zoom={13} scrollWheelZoom={false} className="w-full h-full min-h-[400px]">
+          <MapContainer center={position} zoom={12} scrollWheelZoom={true} className="w-full h-full min-h-[400px]">
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
