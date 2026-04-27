@@ -6,7 +6,7 @@ interface PipeProps {
 }
 
 export default React.memo(function Pipe({ data }: PipeProps) {
-  const { shape, oozeProgress, entryDir } = data;
+  const { shape, oozeProgress, entryDir, crossProgress, crossEntryDir } = data;
 
   const baseColor = 'stroke-border';
   const oozeColor = 'stroke-accent';
@@ -61,6 +61,16 @@ export default React.memo(function Pipe({ data }: PipeProps) {
     )
   }
 
+  const getCrossOozePath = () => {
+    if (crossEntryDir === 'N' || crossEntryDir === 'S') return 'M 50 0 L 50 100';
+    return 'M 0 50 L 100 50';
+  };
+
+  const crossDashVal = pathLength * ((crossProgress || 0) / 100);
+  let isCrossReverse = false;
+  if (shape === 'cross' && crossEntryDir === 'E') isCrossReverse = true;
+  if (shape === 'cross' && crossEntryDir === 'S') isCrossReverse = true;
+
   if (shape === 'empty') {
     return <div className="w-full h-full opacity-10 flex items-center justify-center text-xs font-mono">.</div>;
   }
@@ -85,6 +95,19 @@ export default React.memo(function Pipe({ data }: PipeProps) {
            strokeLinejoin="miter"
            strokeDasharray={pathLength}
            strokeDashoffset={isReverse ? -(pathLength - dashVal) : pathLength - dashVal}
+         />
+      )}
+      
+      {/* Secondary Cross Ooze Path */}
+      {(crossProgress !== undefined && crossProgress > 0) && (
+         <path 
+           d={getCrossOozePath()} 
+           fill="none" 
+           className={`${oozeColor} stroke-[16px] drop-shadow-[0_0_8px_rgba(170,59,255,0.8)] transition-all ease-linear`} 
+           strokeLinecap="square"
+           strokeLinejoin="miter"
+           strokeDasharray={pathLength}
+           strokeDashoffset={isCrossReverse ? -(pathLength - crossDashVal) : pathLength - crossDashVal}
          />
       )}
     </svg>

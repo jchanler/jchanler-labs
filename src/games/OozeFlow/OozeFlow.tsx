@@ -17,7 +17,7 @@ const GridCell = React.memo(({ x, y, cell, onClick }: { x: number, y: number, ce
 
 const GRID_W = 10;
 const GRID_H = 8;
-const INITIAL_DELAY_MS = 12000;
+const INITIAL_DELAY_MS = 30000;
 
 export default function OozeFlowGame() {
   const [grid, setGrid] = useState<PipeData[][]>([]);
@@ -56,7 +56,7 @@ export default function OozeFlowGame() {
 
   const handleCellClick = useCallback((x: number, y: number) => {
     const { grid: currentGrid, queue: currentQueue, gameState: currentGameState } = stateRef.current;
-    
+
     if (currentGameState === 'gameover') return;
 
     const cell = currentGrid[y][x];
@@ -132,7 +132,9 @@ export default function OozeFlowGame() {
           return newGrid;
         }
 
-        if (cell.oozeProgress < 100) {
+        const isSecondPass = cell.shape === 'cross' && cell.oozeProgress === 100 && cell.crossProgress !== undefined && cell.crossProgress < 100;
+
+        if (cell.oozeProgress < 100 || isSecondPass) {
           const newGrid = [...prevGrid];
           newGrid[y] = [...newGrid[y]];
 
@@ -140,8 +142,13 @@ export default function OozeFlowGame() {
           // Fast Forward: 20 progress per 20ms = 5 ticks = 0.1 seconds per tile
           const increment = fastForward ? 20 : 4;
 
-          newGrid[y][x] = { ...cell, oozeProgress: cell.oozeProgress + increment };
-          if (newGrid[y][x].oozeProgress > 100) newGrid[y][x].oozeProgress = 100;
+          if (isSecondPass) {
+            const nextCrossProgress = (cell.crossProgress || 0) + increment;
+            newGrid[y][x] = { ...cell, crossProgress: nextCrossProgress > 100 ? 100 : nextCrossProgress };
+          } else {
+            newGrid[y][x] = { ...cell, oozeProgress: cell.oozeProgress + increment };
+            if (newGrid[y][x].oozeProgress > 100) newGrid[y][x].oozeProgress = 100;
+          }
           return newGrid;
         }
         else {
@@ -154,7 +161,21 @@ export default function OozeFlowGame() {
           }
 
           const nextCell = prevGrid[nextCellCoords.y][nextCellCoords.x];
-          if (!canConnect(oozeExitDir, nextCell.shape) || nextCell.oozeProgress > 0) {
+          
+          const entryDirs: Record<Direction, Direction> = { 'N': 'S', 'S': 'N', 'E': 'W', 'W': 'E' };
+          const newEntryDir = entryDirs[oozeExitDir];
+
+          let isValidCrossReentry = false;
+          if (nextCell.shape === 'cross' && nextCell.oozeProgress === 100 && nextCell.crossEntryDir === undefined) {
+             const v = ['N', 'S'];
+             const h = ['E', 'W'];
+             const prvDir = nextCell.entryDir!;
+             if ((v.includes(prvDir) && h.includes(newEntryDir)) || (h.includes(prvDir) && v.includes(newEntryDir))) {
+                 isValidCrossReentry = true;
+             }
+          }
+
+          if (!canConnect(oozeExitDir, nextCell.shape) || (nextCell.oozeProgress > 0 && !isValidCrossReentry)) {
             // can't connect, or hitting a pipe already filled
             setGameState('gameover');
             return prevGrid;
@@ -166,10 +187,12 @@ export default function OozeFlowGame() {
           const newGrid = [...prevGrid];
           newGrid[nextCellCoords.y] = [...newGrid[nextCellCoords.y]];
 
-          const entryDirs: Record<Direction, Direction> = { 'N': 'S', 'S': 'N', 'E': 'W', 'W': 'E' };
-          const newEntryDir = entryDirs[oozeExitDir];
-
-          newGrid[nextCellCoords.y][nextCellCoords.x].entryDir = newEntryDir;
+          if (isValidCrossReentry) {
+             newGrid[nextCellCoords.y][nextCellCoords.x] = { ...nextCell, crossEntryDir: newEntryDir, crossProgress: 0 };
+          } else {
+             newGrid[nextCellCoords.y][nextCellCoords.x] = { ...nextCell, entryDir: newEntryDir };
+          }
+          
           const nextExit = getExitDirection(nextCell.shape, newEntryDir);
           if (nextExit) setOozeExitDir(nextExit);
 
