@@ -15,20 +15,36 @@ export default function Arcade() {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {['Othello', 'Connect Four', 'Minesweeper'].map((game) => (
-            <div 
-              key={game}
-              className="group aspect-square bg-bg-surface border-4 border-border rounded-xl p-6 flex flex-col items-center justify-center hover:border-primary hover:scale-105 transition-all cursor-pointer shadow-lg"
-            >
-              <div className="w-20 h-20 bg-primary/20 rounded-full mb-4 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-colors">
-                <Gamepad size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-text-main">{game}</h3>
-              <div className="mt-4 px-4 py-1 bg-secondary text-bg-surface font-black text-sm rounded uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                Play
-              </div>
+          <Link to="/arcade/othello" className="group aspect-square bg-bg-surface border-4 border-border rounded-xl p-6 flex flex-col items-center justify-center hover:border-primary hover:scale-105 transition-all cursor-pointer shadow-lg">
+            <div className="w-20 h-20 bg-primary/20 rounded-full mb-4 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-colors">
+              <Gamepad size={32} />
             </div>
-          ))}
+            <h3 className="text-xl font-bold text-text-main">Othello</h3>
+            <div className="mt-4 px-4 py-1 bg-secondary text-bg-surface font-black text-sm rounded uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+              Play
+            </div>
+          </Link>
+
+          <Link to="/arcade/connectfour" className="group aspect-square bg-bg-surface border-4 border-border rounded-xl p-6 flex flex-col items-center justify-center hover:border-primary hover:scale-105 transition-all cursor-pointer shadow-lg">
+            <div className="w-20 h-20 bg-primary/20 rounded-full mb-4 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-colors">
+              <Gamepad size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-text-main">Connect Four</h3>
+            <div className="mt-4 px-4 py-1 bg-secondary text-bg-surface font-black text-sm rounded uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+              Play
+            </div>
+          </Link>
+
+          {/* Minesweeper Placeholder */}
+          <div className="group aspect-square bg-bg-surface border-4 border-border rounded-xl p-6 flex flex-col items-center justify-center shadow-lg opacity-50 cursor-not-allowed">
+            <div className="w-20 h-20 bg-primary/20 rounded-full mb-4 flex items-center justify-center text-primary">
+              <Gamepad size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-text-main">Minesweeper</h3>
+            <div className="mt-4 px-4 py-1 bg-secondary text-bg-surface font-black text-sm rounded uppercase tracking-widest opacity-0">
+              Coming Soon
+            </div>
+          </div>
 
           {/* Navigable Ooze Flow Card */}
           <Link to="/arcade/oozeflow" className="group aspect-square bg-bg-surface border-4 border-border rounded-xl p-6 flex flex-col items-center justify-center hover:border-primary hover:scale-105 transition-all cursor-pointer shadow-lg">
