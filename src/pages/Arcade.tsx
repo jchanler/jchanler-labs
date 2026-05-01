@@ -35,16 +35,16 @@ export default function Arcade() {
             </div>
           </Link>
 
-          {/* Minesweeper Placeholder */}
-          <div className="group aspect-square bg-bg-surface border-4 border-border rounded-xl p-6 flex flex-col items-center justify-center shadow-lg opacity-50 cursor-not-allowed">
-            <div className="w-20 h-20 bg-primary/20 rounded-full mb-4 flex items-center justify-center text-primary">
+          {/* JezzBall Card */}
+          <Link to="/arcade/jezzball" className="group aspect-square bg-bg-surface border-4 border-border rounded-xl p-6 flex flex-col items-center justify-center hover:border-primary hover:scale-105 transition-all cursor-pointer shadow-lg">
+            <div className="w-20 h-20 bg-primary/20 rounded-full mb-4 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-colors">
               <Gamepad size={32} />
             </div>
-            <h3 className="text-xl font-bold text-text-main">Minesweeper</h3>
-            <div className="mt-4 px-4 py-1 bg-secondary text-bg-surface font-black text-sm rounded uppercase tracking-widest opacity-0">
-              Coming Soon
+            <h3 className="text-xl font-bold text-text-main">JezzBall</h3>
+            <div className="mt-4 px-4 py-1 bg-secondary text-bg-surface font-black text-sm rounded uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+              Play
             </div>
-          </div>
+          </Link>
 
           {/* Navigable Ooze Flow Card */}
           <Link to="/arcade/oozeflow" className="group aspect-square bg-bg-surface border-4 border-border rounded-xl p-6 flex flex-col items-center justify-center hover:border-primary hover:scale-105 transition-all cursor-pointer shadow-lg">
