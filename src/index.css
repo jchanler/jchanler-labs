@@ -50,7 +50,7 @@
   .theme-neon {
     --primary: #ff00ff; /* Neon Magenta */
     --secondary: #00ffff; /* Neon Cyan */
-    --accent: #ffff00; /* Neon Yellow */
+    --accent: #00ff00; /* Neon Green */
     --bg-base: #120024;
     --bg-surface: #240046;
     --text-main: #ffffff;
@@ -60,16 +60,30 @@
   }
 
   .theme-vintage {
-    --primary: #b06500; /* Brass */
-    --secondary: #8c7355; /* Wood/Leather */
-    --accent: #c43e00; /* Rust/Copper */
-    --bg-base: #f7f7f4;
-    --bg-surface: #756654;
-    --text-main: #e8dcc7;
-    --text-muted: #b8a68b;
-    --border-color: #5c4b37;
+    /* 70s arcade cabinet: amber marquee, teal trim, cherry accents on dark wood */
+    --primary: #f4a024; /* Marquee amber */
+    --secondary: #2ec4b6; /* Cabinet teal */
+    --accent: #e63946; /* Cherry red */
+    --bg-base: transparent;
+    --bg-surface: #2a1e14; /* Solid panel — readable over wood */
+    --text-main: #fff8e7; /* Warm cream */
+    --text-muted: #d4bc96; /* Dusty gold */
+    --border-color: #8b6914; /* Brushed brass */
     font-family: 'Times New Roman', serif;
   }
+}
+
+html.theme-vintage,
+html.theme-vintage body {
+  background-image: url('./assets/backgrounds/wood.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: #3d2817;
+}
+
+html.theme-vintage body {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
 }
 
 body {

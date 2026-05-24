@@ -7,7 +7,7 @@ export default function Tests() {
         <header className="mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-text-main flex items-center gap-4">
             <Terminal className="text-primary" size={40} />
-            The Laboratory
+            The Test Lab
           </h1>
           <p className="text-xl text-text-muted">
             Breaking things on purpose. Test infrastructure, bots, and automated chaos.
