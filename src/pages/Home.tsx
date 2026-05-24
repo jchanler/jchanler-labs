@@ -13,7 +13,7 @@ export default function Home() {
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-text-main">
             A site with some <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
-              fun projects to share.
+             projects I wanted to build.
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-text-muted max-w-2xl mx-auto leading-relaxed">

@@ -4,8 +4,12 @@ import Home from './pages/Home';
 import Arcade from './pages/Arcade';
 import Map from './pages/Map';
 import Media from './pages/Media';
+import OozeFlowGame from './games/OozeFlow';
+import ConnectFour from './games/ConnectFour';
+import Othello from './games/Othello';
 import Tests from './pages/Tests';
 import Links from './pages/Links';
+import Icons from './pages/Icons';
 
 export default function App() {
   return (
@@ -16,10 +20,14 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/arcade" element={<Arcade />} />
+            <Route path="/arcade/oozeflow" element={<OozeFlowGame />} />
+            <Route path="/arcade/connectfour" element={<ConnectFour />} />
+            <Route path="/arcade/othello" element={<Othello />} />
             <Route path="/map" element={<Map />} />
             <Route path="/media" element={<Media />} />
             <Route path="/tests" element={<Tests />} />
             <Route path="/links" element={<Links />} />
+            <Route path="/icons" element={<Icons />} />
           </Routes>
         </main>
       </div>
