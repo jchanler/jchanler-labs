@@ -26,15 +26,24 @@ export default function JezzBallGame() {
   const lastTimeRef = useRef<number>(0);
   const nextWallId = useRef(0);
 
+  const ballsRef = useRef<Ball[]>([]);
+  const wallsRef = useRef<Wall[]>([]);
+  const areasRef = useRef<Rect[]>([{ x: 0, y: 0, w: GAME_WIDTH, h: GAME_HEIGHT }]);
+
   const initGame = useCallback((newLevel = 1, resetLives = true) => {
     setLevel(newLevel);
     if (resetLives) {
       setLives(3);
       setScore(0);
     }
-    setBalls(createInitialBalls(newLevel));
+    const newBalls = createInitialBalls(newLevel);
+    setBalls(newBalls);
+    ballsRef.current = newBalls;
     setWalls([]);
-    setAreas([{ x: 0, y: 0, w: GAME_WIDTH, h: GAME_HEIGHT }]);
+    wallsRef.current = [];
+    const initialAreas = [{ x: 0, y: 0, w: GAME_WIDTH, h: GAME_HEIGHT }];
+    setAreas(initialAreas);
+    areasRef.current = initialAreas;
     setAreaFilledPct(0);
     setGameState('waiting');
     nextWallId.current = 0;
@@ -65,7 +74,11 @@ export default function JezzBallGame() {
       state: 'building',
       progress: 0
     };
-    setWalls(prev => [...prev, newWall]);
+    setWalls(prev => {
+      const next = [...prev, newWall];
+      wallsRef.current = next;
+      return next;
+    });
   };
 
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -79,57 +92,41 @@ export default function JezzBallGame() {
       const deltaTime = (time - lastTimeRef.current) / 1000; // seconds
       const dt = fastForward ? deltaTime * 2 : deltaTime;
 
-      setBalls(prevBalls => {
-        setWalls(prevWalls => {
-          const { nextBalls, nextWalls } = updatePhysics(
-            prevBalls,
-            prevWalls,
-            areas,
-            dt,
-            () => { // onLifeLost
-              setLives(l => {
-                if (l <= 1) {
-                  setGameState('game_over');
-                  return 0;
-                }
-                return l - 1;
-              });
-            },
-            (wallId) => { // onWallBuilt
-              // For simplicity, we just add points and don't actually calculate area fill in this prototype
-              setScore(s => s + 50);
-              setAreaFilledPct(p => Math.min(100, p + 5)); // Fake area fill
-            }
-          );
-
-          return nextWalls;
-        });
-        return prevBalls; // This is a bit disjointed in React, but physics updates balls internally
-      });
-
-      // We actually need to update both balls and walls atomically.
-      // Let's rely on refs for a true game loop, but to keep React simple:
-      setBalls(currentBalls => {
-        let newBalls = currentBalls;
-        setWalls(currentWalls => {
-          const { nextBalls, nextWalls } = updatePhysics(currentBalls, currentWalls, areas, dt, () => {
-            setLives(l => {
-              if (l <= 1) setGameState('game_over');
-              return l > 1 ? l - 1 : 0;
-            });
-          }, () => {
-            setScore(s => s + 50);
-            setAreaFilledPct(p => {
-              const newP = Math.min(100, p + 10);
-              if (newP >= 75) setGameState('level_complete');
-              return newP;
-            });
+      const currentBalls = ballsRef.current;
+      const currentWalls = wallsRef.current;
+      const currentAreas = areasRef.current;
+      
+      const { nextBalls, nextWalls, nextAreas } = updatePhysics(
+        currentBalls,
+        currentWalls,
+        currentAreas,
+        dt,
+        () => {
+          setLives(l => {
+            if (l <= 1) setGameState('game_over');
+            return l > 1 ? l - 1 : 0;
           });
-          newBalls = nextBalls;
-          return nextWalls;
-        });
-        return newBalls;
-      });
+        },
+        () => {
+          setScore(s => s + 50);
+        }
+      );
+
+      // Calculate true area filled percentage
+      const totalArea = GAME_WIDTH * GAME_HEIGHT;
+      const filledArea = nextAreas.filter(a => a.filled).reduce((sum, a) => sum + a.w * a.h, 0);
+      const nextAreaPct = (filledArea / totalArea) * 100;
+      setAreaFilledPct(nextAreaPct);
+      if (nextAreaPct >= 75 && gameState === 'playing') {
+        setGameState('level_complete');
+      }
+
+      ballsRef.current = nextBalls;
+      wallsRef.current = nextWalls;
+      areasRef.current = nextAreas;
+      setBalls(nextBalls);
+      setWalls(nextWalls);
+      setAreas(nextAreas);
     }
 
     lastTimeRef.current = time;
@@ -182,42 +179,53 @@ export default function JezzBallGame() {
                 />
               ))}
 
-              {walls.map(w => {
-                let wx, wy, ww, wh;
-                if (w.state === 'building') {
-                  if (w.orientation === 'horizontal') {
-                    wx = w.startX - w.progress;
-                    wy = w.startY - WALL_THICKNESS / 2;
-                    ww = w.progress * 2;
-                    wh = WALL_THICKNESS;
-                  } else {
-                    wx = w.startX - WALL_THICKNESS / 2;
-                    wy = w.startY - w.progress;
-                    ww = WALL_THICKNESS;
-                    wh = w.progress * 2;
-                  }
-                } else {
-                  if (w.orientation === 'horizontal') {
-                    wx = Math.min(w.startX, w.endX) - WALL_THICKNESS / 2;
-                    wy = w.startY - WALL_THICKNESS / 2;
-                    ww = Math.abs(w.endX - w.startX) + WALL_THICKNESS;
-                    wh = WALL_THICKNESS;
-                  } else {
-                    wx = w.startX - WALL_THICKNESS / 2;
-                    wy = Math.min(w.startY, w.endY) - WALL_THICKNESS / 2;
-                    ww = WALL_THICKNESS;
-                    wh = Math.abs(w.endY - w.startY) + WALL_THICKNESS;
-                  }
-                }
-
-                return (
+              <div className="absolute inset-0 opacity-80 pointer-events-none">
+                {/* Render filled areas */}
+                {areas.filter(a => a.filled).map((a, i) => (
                   <div
-                    key={w.id}
-                    className="absolute bg-secondary/80 shadow-[0_0_8px_rgba(59,255,204,0.5)]"
-                    style={{ left: wx, top: wy, width: ww, height: wh }}
+                    key={`area-${i}`}
+                    className="absolute bg-secondary"
+                    style={{ left: a.x, top: a.y, width: a.w, height: a.h }}
                   />
-                );
-              })}
+                ))}
+
+                {walls.map(w => {
+                  let wx, wy, ww, wh;
+                  if (w.state === 'building') {
+                    if (w.orientation === 'horizontal') {
+                      wx = w.startX - w.progress;
+                      wy = w.startY - WALL_THICKNESS / 2;
+                      ww = w.progress * 2;
+                      wh = WALL_THICKNESS;
+                    } else {
+                      wx = w.startX - WALL_THICKNESS / 2;
+                      wy = w.startY - w.progress;
+                      ww = WALL_THICKNESS;
+                      wh = w.progress * 2;
+                    }
+                  } else {
+                    if (w.orientation === 'horizontal') {
+                      wx = Math.min(w.startX, w.endX) - WALL_THICKNESS / 2;
+                      wy = w.startY - WALL_THICKNESS / 2;
+                      ww = Math.abs(w.endX - w.startX) + WALL_THICKNESS;
+                      wh = WALL_THICKNESS;
+                    } else {
+                      wx = w.startX - WALL_THICKNESS / 2;
+                      wy = Math.min(w.startY, w.endY) - WALL_THICKNESS / 2;
+                      ww = WALL_THICKNESS;
+                      wh = Math.abs(w.endY - w.startY) + WALL_THICKNESS;
+                    }
+                  }
+
+                  return (
+                    <div
+                      key={w.id}
+                      className={`absolute bg-secondary ${w.state === 'building' ? 'shadow-[0_0_8px_rgba(59,255,204,0.5)] z-10' : ''}`}
+                      style={{ left: wx, top: wy, width: ww, height: wh }}
+                    />
+                  );
+                })}
+              </div>
             </div>
           </div>
 

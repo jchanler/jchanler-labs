@@ -42,76 +42,96 @@ export function updatePhysics(
   dt: number,
   onLifeLost: () => void,
   onWallBuilt: (wallId: number) => void
-): { nextBalls: Ball[]; nextWalls: Wall[] } {
+): { nextBalls: Ball[]; nextWalls: Wall[]; nextAreas: Rect[] } {
   let nextBalls = balls.map(b => ({ ...b }));
   let nextWalls = walls.map(w => ({ ...w }));
+  let nextAreas = areas.map(a => ({ ...a }));
   let lifeLost = false;
 
-  // Move balls
+  // Move balls and bounce off their containing area bounds
   nextBalls.forEach(ball => {
     let nextX = ball.x + ball.vx * dt;
     let nextY = ball.y + ball.vy * dt;
     let bounceX = false;
     let bounceY = false;
 
-    // Boundary collision (using areas)
-    // Actually, balls are constrained to the areas they are currently in.
-    // To simplify: test collision with all built walls and game boundaries
-    
-    // Bounds check
-    if (nextX - ball.radius < 0) { nextX = ball.radius; bounceX = true; }
-    if (nextX + ball.radius > GAME_WIDTH) { nextX = GAME_WIDTH - ball.radius; bounceX = true; }
-    if (nextY - ball.radius < 0) { nextY = ball.radius; bounceY = true; }
-    if (nextY + ball.radius > GAME_HEIGHT) { nextY = GAME_HEIGHT - ball.radius; bounceY = true; }
+    // Find the specific un-filled area the ball is inside
+    const ballArea = nextAreas.find(a => !a.filled && ball.x >= a.x && ball.x <= a.x + a.w && ball.y >= a.y && ball.y <= a.y + a.h) 
+                     || { x: 0, y: 0, w: GAME_WIDTH, h: GAME_HEIGHT };
 
-    // Wall collision
-    for (const wall of nextWalls) {
-      const wx = Math.min(wall.startX, wall.endX) - WALL_THICKNESS/2;
-      const wy = Math.min(wall.startY, wall.endY) - WALL_THICKNESS/2;
-      let ww = wall.orientation === 'horizontal' ? Math.abs(wall.endX - wall.startX) : WALL_THICKNESS;
-      let wh = wall.orientation === 'vertical' ? Math.abs(wall.endY - wall.startY) : WALL_THICKNESS;
+    if (nextX - ball.radius < ballArea.x) { nextX = ballArea.x + ball.radius; bounceX = true; }
+    if (nextX + ball.radius > ballArea.x + ballArea.w) { nextX = ballArea.x + ballArea.w - ball.radius; bounceX = true; }
+    if (nextY - ball.radius < ballArea.y) { nextY = ballArea.y + ball.radius; bounceY = true; }
+    if (nextY + ball.radius > ballArea.y + ballArea.h) { nextY = ballArea.y + ballArea.h - ball.radius; bounceY = true; }
 
-      if (wall.state === 'building') {
-        // Special calculation for building wall
-        // A building wall extends in both directions from startX, startY
-        const currentLength = wall.progress * WALL_BUILD_SPEED; // this is not quite right if dt is small
-        // We will update wall progress below. We use the updated wall for collision.
-      } else {
-        if (circleRectCollide(nextX, ball.y, ball.radius, wx, wy, ww, wh)) bounceX = true;
-        if (circleRectCollide(ball.x, nextY, ball.radius, wx, wy, ww, wh)) bounceY = true;
-      }
-    }
+    // Optional: bounce off building walls (if they don't lose a life immediately, but JezzBall logic says life is lost)
+    // So we don't bounce off building walls.
 
     if (bounceX) ball.vx *= -1;
     if (bounceY) ball.vy *= -1;
 
-    ball.x += ball.vx * dt;
-    ball.y += ball.vy * dt;
+    ball.x = nextX;
+    ball.y = nextY;
   });
+
+  // Ball-ball collisions
+  for (let i = 0; i < nextBalls.length; i++) {
+    for (let j = i + 1; j < nextBalls.length; j++) {
+      const b1 = nextBalls[i];
+      const b2 = nextBalls[j];
+      const dx = b2.x - b1.x;
+      const dy = b2.y - b1.y;
+      const distSq = dx * dx + dy * dy;
+      const minDist = b1.radius + b2.radius;
+
+      if (distSq < minDist * minDist) {
+        const dist = Math.sqrt(distSq) || 1; // prevent divide by zero
+        const nx = dx / dist;
+        const ny = dy / dist;
+
+        // Relative velocity
+        const dvx = b1.vx - b2.vx;
+        const dvy = b1.vy - b2.vy;
+        const relativeVelAlongNormal = dvx * nx + dvy * ny;
+
+        // Only resolve if moving towards each other
+        if (relativeVelAlongNormal > 0) {
+          // Perfectly elastic collision (equal mass)
+          b1.vx -= relativeVelAlongNormal * nx;
+          b1.vy -= relativeVelAlongNormal * ny;
+          b2.vx += relativeVelAlongNormal * nx;
+          b2.vy += relativeVelAlongNormal * ny;
+        }
+
+        // Separate them to prevent sticking
+        const overlap = minDist - dist;
+        b1.x -= (overlap / 2) * nx;
+        b1.y -= (overlap / 2) * ny;
+        b2.x += (overlap / 2) * nx;
+        b2.y += (overlap / 2) * ny;
+      }
+    }
+  }
 
   // Update building walls
   nextWalls.forEach(wall => {
     if (wall.state === 'building') {
       const addedLen = WALL_BUILD_SPEED * dt;
-      let newLength = wall.progress + addedLen;
+      wall.progress += addedLen;
 
-      // Calculate wall rect based on newLength
-      // Two segments extending from startX, startY
-      // Need to handle collisions with other walls or boundaries to stop building
-      
-      // We will simplify and say 'progress' is the total length added in both directions
-      let stopDir1 = false;
-      let stopDir2 = false;
-      
-      // Let's implement a simpler wall building: progress goes from 0 to max distance to edge
-      // For a robust implementation, a wall extends from its origin in both directions
-      // until it hits another wall or the edge.
-      
-      // Let's just track current extending ends
-      const ext1 = newLength; // e.g. going negative
-      const ext2 = newLength; // e.g. going positive
+      const area = nextAreas.find(a => !a.filled && wall.startX >= a.x && wall.startX <= a.x + a.w && wall.startY >= a.y && wall.startY <= a.y + a.h);
+      if (!area) {
+        wall.state = 'built'; // gracefully handle if somehow placed out of bounds
+        return;
+      }
 
-      // Check ball collisions with the *building* wall
+      const distLeft = wall.orientation === 'horizontal' ? wall.startX - area.x : wall.startY - area.y;
+      const distRight = wall.orientation === 'horizontal' ? area.x + area.w - wall.startX : area.y + area.h - wall.startY;
+      
+      const ext1 = Math.min(wall.progress, distLeft);
+      const ext2 = Math.min(wall.progress, distRight);
+
+      // Check ball collisions with the building wall to destroy wall
       let buildingWx, buildingWy, buildingWw, buildingWh;
       if (wall.orientation === 'horizontal') {
         buildingWx = wall.startX - ext1;
@@ -131,24 +151,43 @@ export function updatePhysics(
         }
       });
 
-      if (lifeLost) {
-        wall.state = 'built'; // It will be removed later
-      } else {
-        wall.progress = newLength;
-        // In a real implementation, we'd check if it hits boundaries/other walls to finalize
-        // For simplicity, we just cap it at a large number for now.
-        if (wall.progress > GAME_WIDTH + GAME_HEIGHT) {
-           wall.state = 'built';
-           // Find intersection to truncate endX and endY
-           if (wall.orientation === 'horizontal') {
-             wall.endX = wall.startX + GAME_WIDTH; // Simplified
-             wall.startX = wall.startX - GAME_WIDTH;
-           } else {
-             wall.endY = wall.startY + GAME_HEIGHT;
-             wall.startY = wall.startY - GAME_HEIGHT;
-           }
-           onWallBuilt(wall.id);
+      if (!lifeLost && wall.progress >= Math.max(distLeft, distRight)) {
+        // Wall completed building!
+        wall.state = 'built';
+        
+        // Update wall coords to span the area exactly (for rendering)
+        if (wall.orientation === 'horizontal') {
+          wall.startX = area.x;
+          wall.endX = area.x + area.w;
+        } else {
+          wall.startY = area.y;
+          wall.endY = area.y + area.h;
         }
+        onWallBuilt(wall.id);
+
+        // Split the area
+        let area1: Rect, area2: Rect;
+        if (wall.orientation === 'horizontal') {
+          area1 = { x: area.x, y: area.y, w: area.w, h: wall.startY - WALL_THICKNESS/2 - area.y };
+          area2 = { x: area.x, y: wall.startY + WALL_THICKNESS/2, w: area.w, h: area.y + area.h - (wall.startY + WALL_THICKNESS/2) };
+        } else {
+          area1 = { x: area.x, y: area.y, w: wall.startX - WALL_THICKNESS/2 - area.x, h: area.h };
+          area2 = { x: wall.startX + WALL_THICKNESS/2, y: area.y, w: area.x + area.w - (wall.startX + WALL_THICKNESS/2), h: area.h };
+        }
+
+        // Assign balls to areas
+        const balls1 = nextBalls.filter(b => b.x >= area1.x && b.x <= area1.x + area1.w && b.y >= area1.y && b.y <= area1.y + area1.h);
+        const balls2 = nextBalls.filter(b => b.x >= area2.x && b.x <= area2.x + area2.w && b.y >= area2.y && b.y <= area2.y + area2.h);
+
+        // If an area has no balls, mark it as filled
+        if (balls1.length === 0) area1.filled = true;
+        if (balls2.length === 0) area2.filled = true;
+
+        // Replace the old area with the two new ones
+        nextAreas = nextAreas.filter(a => a !== area);
+        // Only keep areas with positive dimensions
+        if (area1.w > 0 && area1.h > 0) nextAreas.push(area1);
+        if (area2.w > 0 && area2.h > 0) nextAreas.push(area2);
       }
     }
   });
@@ -158,5 +197,5 @@ export function updatePhysics(
     nextWalls = nextWalls.filter(w => w.state === 'built'); // Remove the building wall
   }
 
-  return { nextBalls, nextWalls };
+  return { nextBalls, nextWalls, nextAreas };
 }

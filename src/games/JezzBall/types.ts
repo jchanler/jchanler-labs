@@ -30,6 +30,7 @@ export interface Rect {
   y: number;
   w: number;
   h: number;
+  filled?: boolean;
 }
 
 export interface LevelData {
