@@ -7,6 +7,7 @@ import Media from './pages/Media';
 import OozeFlowGame from './games/OozeFlow';
 import ConnectFour from './games/ConnectFour';
 import Othello from './games/Othello';
+import JezzBall from './games/JezzBall';
 import Tests from './pages/Tests';
 import Links from './pages/Links';
 import Icons from './pages/Icons';
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="/arcade/oozeflow" element={<OozeFlowGame />} />
             <Route path="/arcade/connectfour" element={<ConnectFour />} />
             <Route path="/arcade/othello" element={<Othello />} />
+            <Route path="/arcade/jezzball" element={<JezzBall />} />
             <Route path="/map" element={<Map />} />
             <Route path="/media" element={<Media />} />
             <Route path="/tests" element={<Tests />} />
